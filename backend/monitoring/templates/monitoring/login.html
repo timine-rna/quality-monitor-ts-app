@@ -1,0 +1,50 @@
+{% extends "monitoring/base.html" %}
+
+{% block title %}Вход в систему{% endblock %}
+
+{% block content %}
+<div class="columns is-centered">
+  <div class="column is-4">
+    <div class="box">
+      <h1 class="title is-4 has-text-centered">Войти в систему</h1>
+      <form method="post">
+        {% csrf_token %}
+        <div class="field">
+          <label class="label">Логин</label>
+          <div class="control">
+            <input
+              class="input"
+              type="text"
+              name="username"
+              autofocus
+              required
+              value="{{ form.username.value|default:'' }}"
+            />
+          </div>
+          {% if form.username.errors %}
+          <p class="help is-danger">{{ form.username.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="field">
+          <label class="label">Пароль</label>
+          <div class="control">
+            <input class="input" type="password" name="password" required />
+          </div>
+          {% if form.password.errors %}
+          <p class="help is-danger">{{ form.password.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+        <p class="help is-danger">{{ form.non_field_errors.0 }}</p>
+        {% endif %}
+
+        <div class="field has-text-centered">
+          <button class="button is-primary" type="submit">Продолжить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

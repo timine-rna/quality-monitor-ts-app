@@ -1,0 +1,191 @@
+{% extends "monitoring/base.html" %}
+
+{% block title %}Рабочее место{% endblock %}
+
+{% block content %}
+<div class="columns">
+  <div class="column is-half">
+    <div class="box">
+      <h2 class="title is-5">Добавить выпуск детали</h2>
+      <form method="post" action="{% url 'create_production_entry' %}">
+        {% csrf_token %}
+
+        <div class="field">
+          <label class="label" for="{{ entry_form.machine.id_for_label }}">Станок</label>
+          <div class="control">
+            <div class="select is-fullwidth">
+              {{ entry_form.machine }}
+            </div>
+          </div>
+          {% if entry_form.machine.errors %}
+          <p class="help is-danger">{{ entry_form.machine.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="field">
+          <label class="label" for="{{ entry_form.detail_name.id_for_label }}">Деталь</label>
+          <div class="control">{{ entry_form.detail_name }}</div>
+          {% if entry_form.detail_name.errors %}
+          <p class="help is-danger">{{ entry_form.detail_name.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="field is-grouped">
+          <div class="control is-expanded">
+            <label class="label" for="{{ entry_form.parts_made.id_for_label }}">Выпуск, шт.</label>
+            {{ entry_form.parts_made }}
+            {% if entry_form.parts_made.errors %}
+            <p class="help is-danger">{{ entry_form.parts_made.errors.0 }}</p>
+            {% endif %}
+          </div>
+          <div class="control is-expanded">
+            <label class="label" for="{{ entry_form.defective_parts.id_for_label }}"
+              >Брак, шт.</label
+            >
+            {{ entry_form.defective_parts }}
+            {% if entry_form.defective_parts.errors %}
+            <p class="help is-danger">{{ entry_form.defective_parts.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="field is-grouped">
+          <div class="control is-expanded">
+            <label class="label" for="{{ entry_form.temperature_c.id_for_label }}"
+              >Температура, °C</label
+            >
+            {{ entry_form.temperature_c }}
+          </div>
+          <div class="control is-expanded">
+            <label class="label" for="{{ entry_form.vibration_mm.id_for_label }}"
+              >Вибрация, мм/с</label
+            >
+            {{ entry_form.vibration_mm }}
+          </div>
+          <div class="control is-expanded">
+            <label class="label" for="{{ entry_form.tool_wear_percent.id_for_label }}"
+              >Износ, %</label
+            >
+            {{ entry_form.tool_wear_percent }}
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="{{ entry_form.shift.id_for_label }}">Смена</label>
+          <div class="control">{{ entry_form.shift }}</div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="{{ entry_form.note.id_for_label }}">Комментарий</label>
+          {{ entry_form.note }}
+        </div>
+
+        <div class="field has-text-right">
+          <button class="button is-primary" type="submit">Сохранить</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="box">
+      <h2 class="title is-5">Сообщить о проблеме с инструментом</h2>
+      <form method="post" action="{% url 'report_tool_issue' %}">
+        {% csrf_token %}
+        <div class="field">
+          <label class="label" for="{{ issue_form.tool.id_for_label }}">Инструмент</label>
+          <div class="control">
+            <div class="select is-fullwidth">
+              {{ issue_form.tool }}
+            </div>
+          </div>
+          {% if issue_form.tool.errors %}
+          <p class="help is-danger">{{ issue_form.tool.errors.0 }}</p>
+          {% endif %}
+        </div>
+        <div class="field">
+          <label class="label" for="{{ issue_form.defective_count.id_for_label }}"
+            >Количество с браком</label
+          >
+          <div class="control">{{ issue_form.defective_count }}</div>
+          {% if issue_form.defective_count.errors %}
+          <p class="help is-danger">{{ issue_form.defective_count.errors.0 }}</p>
+          {% endif %}
+        </div>
+        <div class="field">
+          <label class="label" for="{{ issue_form.description.id_for_label }}"
+            >Комментарий</label
+          >
+          {{ issue_form.description }}
+        </div>
+        <div class="field has-text-right">
+          <button class="button is-warning" type="submit">Отправить руководителю</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="column is-half">
+    <div class="box">
+      <h2 class="title is-5">Последние записи</h2>
+      <table class="table is-striped is-fullwidth">
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Станок</th>
+            <th>Деталь</th>
+            <th>Выпуск</th>
+            <th>Брак</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in recent_entries %}
+          <tr>
+            <td>{{ entry.recorded_at|date:"d.m H:i" }}</td>
+            <td>
+              {{ entry.machine.name }}
+              {% if entry.machine.subdivision %}
+              <br /><span class="is-size-7 has-text-grey">{{ entry.machine.subdivision }}</span>
+              {% endif %}
+            </td>
+            <td>{{ entry.detail_name }}</td>
+            <td>{{ entry.parts_made }}</td>
+            <td>{{ entry.defective_parts }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5">Данных пока нет.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="box">
+      <h2 class="title is-5">Отправленные сообщения об инструменте</h2>
+      <table class="table is-fullwidth">
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Инструмент</th>
+            <th>Брак</th>
+            <th>Комментарий</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for issue in recent_issues %}
+          <tr>
+            <td>{{ issue.recorded_at|date:"d.m H:i" }}</td>
+            <td>{{ issue.tool.name }}</td>
+            <td>{{ issue.defective_count }}</td>
+            <td>{{ issue.description|default:"—" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4">Сообщений пока нет.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
