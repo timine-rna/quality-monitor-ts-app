@@ -60,6 +60,7 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             self._ensure_manager(password=options["manager_password"])
+            self._ensure_demo_worker(password=options["worker_password"])
             machines = self._load_machines(demo_csv)
             self._load_inventory(inventory_csv)
             self._load_employees(employees_csv, machines, options["worker_password"])
@@ -84,6 +85,27 @@ class Command(BaseCommand):
             self.stdout.write("Создан руководитель: login=manager")
         else:
             self.stdout.write("Учётная запись руководителя уже существует.")
+            manager.set_password(password)
+            manager.save(update_fields=["password"])
+
+    def _ensure_demo_worker(self, password: str) -> None:
+        worker, created = User.objects.get_or_create(
+            username="worker",
+            defaults={
+                "role": User.Role.WORKER,
+                "first_name": "Тестовый",
+                "last_name": "Сотрудник",
+                "email": "worker@example.com",
+                "is_staff": False,
+                "is_superuser": False,
+            },
+        )
+        worker.set_password(password)
+        worker.save(update_fields=["password"])
+        if created:
+            self.stdout.write("Создан тестовый сотрудник: login=worker")
+        else:
+            self.stdout.write("Пароль тестового сотрудника обновлён.")
 
     def _load_machines(self, demo_csv: Path) -> list[Machine]:
         machines: list[Machine] = []

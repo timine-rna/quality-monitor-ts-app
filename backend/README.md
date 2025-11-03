@@ -12,10 +12,10 @@ python manage.py fill_dummy_data
 python manage.py runserver
 ```
 
-После запуска:
+После запуска (команда `python manage.py fill_dummy_data`):
 
-- Руководитель: `manager` / `manager123`
-- Сотрудник (пример): `e01` / `worker123`
+- Руководитель (дашборд): `manager` / `manager123`
+- Сотрудник для ввода производства: `worker` / `worker123`
 
 ## Основные возможности
 
